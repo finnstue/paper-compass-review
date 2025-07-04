@@ -210,18 +210,42 @@ const PaperReviewer = () => {
               </Button> : <div className="flex gap-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input id="search-input" placeholder="Search papers..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 w-64" />
+                  <Input id="search-input" placeholder="Search papers..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 w-48" />
                 </div>
                 <Button onClick={() => setShowSearch(false)} variant="outline" size="sm">
                   Close
                 </Button>
               </div>}
+            
+            {/* Navigation buttons */}
+            <Button onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} disabled={currentIndex === 0} variant="outline" size="sm">
+              <ChevronLeft className="w-4 h-4" />
+              Prev (P)
+            </Button>
+            <Button onClick={() => setCurrentIndex(Math.min(filteredPapers.length - 1, currentIndex + 1))} disabled={currentIndex === filteredPapers.length - 1} variant="outline" size="sm">
+              Next (N)
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+            <Button onClick={() => setShowJumpTo(true)} variant="outline" size="sm">
+              Jump (J)
+            </Button>
+            
+            {/* Rating buttons */}
+            <Button onClick={() => ratePaper('interesting')} className="bg-green-600 hover:bg-green-700 text-white" size="sm">
+              <ThumbsUp className="w-4 h-4" />
+              Yes (M)
+            </Button>
+            <Button onClick={() => ratePaper('not-interesting')} className="bg-red-600 hover:bg-red-700 text-white" size="sm">
+              <ThumbsDown className="w-4 h-4" />
+              No (X)
+            </Button>
+            
             <Button onClick={() => setShowStats(true)} variant="outline" size="sm">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Statistics (S)
+              <BarChart3 className="w-4 h-4" />
+              Stats (S)
             </Button>
             <Button onClick={saveProgress} variant="outline" size="sm">
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-4 h-4" />
               Save
             </Button>
           </div>
@@ -241,7 +265,7 @@ const PaperReviewer = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-4 text-sm mb-4">
+        <div className="flex items-center gap-4 text-sm">
           <label className="flex items-center gap-2 cursor-pointer">
             <Checkbox checked={showOnlyUnrated} onCheckedChange={checked => setShowOnlyUnrated(checked === true)} />
             Hide rated (U)
@@ -258,37 +282,6 @@ const PaperReviewer = () => {
             <Checkbox checked={randomOrder} onCheckedChange={checked => setRandomOrder(checked === true)} />
             Random order (R)
           </label>
-          <Button onClick={clearFilters} variant="outline" size="sm">
-            Clear (C)
-          </Button>
-        </div>
-
-        {/* Navigation and Rating */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} disabled={currentIndex === 0} variant="outline" size="sm">
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous (P)
-            </Button>
-            <Button onClick={() => setCurrentIndex(Math.min(filteredPapers.length - 1, currentIndex + 1))} disabled={currentIndex === filteredPapers.length - 1} variant="outline" size="sm">
-              Next (N)
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-            <Button onClick={() => setShowJumpTo(true)} variant="outline" size="sm">
-              Jump to... (J)
-            </Button>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button onClick={() => ratePaper('interesting')} className="bg-green-600 hover:bg-green-700 text-white" size="sm">
-              <ThumbsUp className="w-4 h-4 mr-2" />
-              Interesting (M)
-            </Button>
-            <Button onClick={() => ratePaper('not-interesting')} className="bg-red-600 hover:bg-red-700 text-white" size="sm">
-              <ThumbsDown className="w-4 h-4 mr-2" />
-              Not Interesting (X)
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -322,7 +315,7 @@ const PaperReviewer = () => {
               {/* Layperson Summary */}
               <div>
                 <h3 className="font-medium text-gray-900 mb-2">Layperson Summary</h3>
-                <p className="text-gray-700">
+                <p className="text-gray-800">
                   {currentPaper.laypersonSummary || 'No summary provided'}
                 </p>
               </div>
@@ -330,7 +323,7 @@ const PaperReviewer = () => {
               {/* Solution Sentence */}
               <div>
                 <h3 className="font-medium text-gray-900 mb-2">Solution Sentence</h3>
-                <p className="text-gray-700">
+                <p className="text-gray-800">
                   {currentPaper.solutionSentence || 'No solution sentence provided'}
                 </p>
               </div>
