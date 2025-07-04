@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, BarChart3, Save, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -265,21 +264,21 @@ const PaperReviewer = () => {
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox 
                 checked={showOnlyUnrated} 
-                onCheckedChange={setShowOnlyUnrated}
+                onCheckedChange={(checked) => setShowOnlyUnrated(checked === true)}
               />
               Hide rated (U)
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox 
                 checked={showOnlyIndustry} 
-                onCheckedChange={setShowOnlyIndustry}
+                onCheckedChange={(checked) => setShowOnlyIndustry(checked === true)}
               />
               Industry only (I)
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox 
                 checked={randomOrder} 
-                onCheckedChange={setRandomOrder}
+                onCheckedChange={(checked) => setRandomOrder(checked === true)}
               />
               Random order (R)
             </label>
