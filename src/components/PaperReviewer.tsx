@@ -11,7 +11,6 @@ import { toast } from '@/hooks/use-toast';
 import { StatisticsDialog } from './StatisticsDialog';
 import { JumpToDialog } from './JumpToDialog';
 import { mockPapers } from '../data/mockPapers';
-
 export interface Paper {
   id: number;
   title: string;
@@ -30,7 +29,6 @@ export interface Paper {
     productPotential: boolean;
   };
 }
-
 const PaperReviewer = () => {
   const [papers, setPapers] = useState<Paper[]>(mockPapers);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -52,14 +50,7 @@ const PaperReviewer = () => {
     // Apply search filter
     if (searchTerm.trim()) {
       const searchWords = searchTerm.toLowerCase().split(' ').filter(word => word.length > 0);
-      filtered = filtered.filter(paper => 
-        searchWords.every(word => 
-          paper.title.toLowerCase().includes(word) ||
-          paper.abstract.toLowerCase().includes(word) ||
-          paper.authors.some(author => author.toLowerCase().includes(word)) ||
-          paper.keywords.some(keyword => keyword.toLowerCase().includes(word))
-        )
-      );
+      filtered = filtered.filter(paper => searchWords.every(word => paper.title.toLowerCase().includes(word) || paper.abstract.toLowerCase().includes(word) || paper.authors.some(author => author.toLowerCase().includes(word)) || paper.keywords.some(keyword => keyword.toLowerCase().includes(word))));
     }
 
     // Apply unrated filter
@@ -81,44 +72,37 @@ const PaperReviewer = () => {
     if (randomOrder) {
       filtered = [...filtered].sort(() => Math.random() - 0.5);
     }
-
     setFilteredPapers(filtered);
-    
     if (filtered.length > 0 && currentIndex >= filtered.length) {
       setCurrentIndex(0);
     }
   }, [papers, searchTerm, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, randomOrder, currentIndex]);
-
   useEffect(() => {
     applyFilters();
   }, [applyFilters]);
-
   const currentPaper = filteredPapers[currentIndex];
-  const progress = filteredPapers.length > 0 ? ((currentIndex + 1) / filteredPapers.length) * 100 : 0;
-
+  const progress = filteredPapers.length > 0 ? (currentIndex + 1) / filteredPapers.length * 100 : 0;
   const ratePaper = (rating: 'interesting' | 'not-interesting') => {
     if (!currentPaper) return;
-
-    const updatedPapers = papers.map(paper => 
-      paper.id === currentPaper.id ? { ...paper, rating } : paper
-    );
+    const updatedPapers = papers.map(paper => paper.id === currentPaper.id ? {
+      ...paper,
+      rating
+    } : paper);
     setPapers(updatedPapers);
-    
+
     // Move to next paper
     if (currentIndex < filteredPapers.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
   };
-
   const updatePaperField = (field: keyof Paper, value: string) => {
     if (!currentPaper) return;
-
-    const updatedPapers = papers.map(paper => 
-      paper.id === currentPaper.id ? { ...paper, [field]: value } : paper
-    );
+    const updatedPapers = papers.map(paper => paper.id === currentPaper.id ? {
+      ...paper,
+      [field]: value
+    } : paper);
     setPapers(updatedPapers);
   };
-
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
       if (e.key === 'f' && e.ctrlKey) {
@@ -128,7 +112,6 @@ const PaperReviewer = () => {
       }
       return;
     }
-
     switch (e.key.toLowerCase()) {
       case 'm':
         ratePaper('interesting');
@@ -180,12 +163,10 @@ const PaperReviewer = () => {
         break;
     }
   }, [currentIndex, filteredPapers.length, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, randomOrder]);
-
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
-
   const clearFilters = () => {
     setSearchTerm('');
     setShowOnlyUnrated(false);
@@ -196,19 +177,16 @@ const PaperReviewer = () => {
     setStatusMessage('Filters cleared');
     setTimeout(() => setStatusMessage(''), 2000);
   };
-
   const saveProgress = () => {
     setStatusMessage('Progress saved successfully');
     setTimeout(() => setStatusMessage(''), 2000);
     toast({
       title: "Progress Saved",
-      description: "Your ratings and progress have been saved.",
+      description: "Your ratings and progress have been saved."
     });
   };
-
   if (!currentPaper) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">No Papers Found</h2>
           <p className="text-gray-600 mb-4">Try adjusting your filters or search terms.</p>
@@ -217,39 +195,27 @@ const PaperReviewer = () => {
             Clear All Filters
           </Button>
         </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+      </div>;
+  }
+  ;
+  return <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-4">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-gray-900">Paper Reviewer</h1>
           <div className="flex items-center gap-2">
-            {!showSearch ? (
-              <Button onClick={() => setShowSearch(true)} variant="outline" size="sm">
+            {!showSearch ? <Button onClick={() => setShowSearch(true)} variant="outline" size="sm">
                 <Search className="w-4 h-4 mr-2" />
                 Search (F)
-              </Button>
-            ) : (
-              <div className="flex gap-2">
+              </Button> : <div className="flex gap-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    id="search-input"
-                    placeholder="Search papers..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
-                  />
+                  <Input id="search-input" placeholder="Search papers..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 w-64" />
                 </div>
                 <Button onClick={() => setShowSearch(false)} variant="outline" size="sm">
                   Close
                 </Button>
-              </div>
-            )}
+              </div>}
             <Button onClick={() => setShowStats(true)} variant="outline" size="sm">
               <BarChart3 className="w-4 h-4 mr-2" />
               Statistics (S)
@@ -277,31 +243,19 @@ const PaperReviewer = () => {
         {/* Filters */}
         <div className="flex items-center gap-4 text-sm mb-4">
           <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox 
-              checked={showOnlyUnrated} 
-              onCheckedChange={(checked) => setShowOnlyUnrated(checked === true)}
-            />
+            <Checkbox checked={showOnlyUnrated} onCheckedChange={checked => setShowOnlyUnrated(checked === true)} />
             Hide rated (U)
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox 
-              checked={showOnlyIndustry} 
-              onCheckedChange={(checked) => setShowOnlyIndustry(checked === true)}
-            />
+            <Checkbox checked={showOnlyIndustry} onCheckedChange={checked => setShowOnlyIndustry(checked === true)} />
             Industry only (I)
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox 
-              checked={showOnlyComputerVision} 
-              onCheckedChange={(checked) => setShowOnlyComputerVision(checked === true)}
-            />
+            <Checkbox checked={showOnlyComputerVision} onCheckedChange={checked => setShowOnlyComputerVision(checked === true)} />
             Computer Vision only (V)
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox 
-              checked={randomOrder} 
-              onCheckedChange={(checked) => setRandomOrder(checked === true)}
-            />
+            <Checkbox checked={randomOrder} onCheckedChange={checked => setRandomOrder(checked === true)} />
             Random order (R)
           </label>
           <Button onClick={clearFilters} variant="outline" size="sm">
@@ -312,21 +266,11 @@ const PaperReviewer = () => {
         {/* Navigation and Rating */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button 
-              onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-              disabled={currentIndex === 0}
-              variant="outline"
-              size="sm"
-            >
+            <Button onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} disabled={currentIndex === 0} variant="outline" size="sm">
               <ChevronLeft className="w-4 h-4 mr-1" />
               Previous (P)
             </Button>
-            <Button 
-              onClick={() => setCurrentIndex(Math.min(filteredPapers.length - 1, currentIndex + 1))}
-              disabled={currentIndex === filteredPapers.length - 1}
-              variant="outline"
-              size="sm"
-            >
+            <Button onClick={() => setCurrentIndex(Math.min(filteredPapers.length - 1, currentIndex + 1))} disabled={currentIndex === filteredPapers.length - 1} variant="outline" size="sm">
               Next (N)
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
@@ -336,19 +280,11 @@ const PaperReviewer = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button 
-              onClick={() => ratePaper('interesting')}
-              className="bg-green-600 hover:bg-green-700 text-white"
-              size="sm"
-            >
+            <Button onClick={() => ratePaper('interesting')} className="bg-green-600 hover:bg-green-700 text-white" size="sm">
               <ThumbsUp className="w-4 h-4 mr-2" />
               Interesting (M)
             </Button>
-            <Button 
-              onClick={() => ratePaper('not-interesting')}
-              className="bg-red-600 hover:bg-red-700 text-white"
-              size="sm"
-            >
+            <Button onClick={() => ratePaper('not-interesting')} className="bg-red-600 hover:bg-red-700 text-white" size="sm">
               <ThumbsDown className="w-4 h-4 mr-2" />
               Not Interesting (X)
             </Button>
@@ -363,37 +299,21 @@ const PaperReviewer = () => {
             <div className="p-6 space-y-6">
               {/* Labels and Quick Information */}
               <div>
-                <h3 className="font-medium text-gray-900 mb-2">Labels & Information</h3>
+                <h3 className="font-medium text-gray-900 mb-2">Labels</h3>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="outline" className="text-xs">
                     {currentPaper.year}
                   </Badge>
-                  <Badge 
-                    variant={currentPaper.rating ? "default" : "outline"} 
-                    className={`text-xs ${
-                      currentPaper.rating === 'interesting' ? 'bg-green-100 text-green-800' :
-                      currentPaper.rating === 'not-interesting' ? 'bg-red-100 text-red-800' :
-                      'text-gray-600'
-                    }`}
-                  >
-                    {currentPaper.rating ? 
-                      (currentPaper.rating === 'interesting' ? 'Interesting' : 'Not Interesting') : 
-                      'Not Reviewed'
-                    }
+                  <Badge variant={currentPaper.rating ? "default" : "outline"} className={`text-xs ${currentPaper.rating === 'interesting' ? 'bg-green-100 text-green-800' : currentPaper.rating === 'not-interesting' ? 'bg-red-100 text-red-800' : 'text-gray-600'}`}>
+                    {currentPaper.rating ? currentPaper.rating === 'interesting' ? 'Interesting' : 'Not Interesting' : 'Not Reviewed'}
                   </Badge>
-                  <Badge 
-                    className={`text-xs ${currentPaper.tags.computerVision ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-                  >
+                  <Badge className={`text-xs ${currentPaper.tags.computerVision ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {currentPaper.tags.computerVision ? '✓ Computer Vision' : '✗ Computer Vision'}
                   </Badge>
-                  <Badge 
-                    className={`text-xs ${currentPaper.tags.industryProblem ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-                  >
+                  <Badge className={`text-xs ${currentPaper.tags.industryProblem ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {currentPaper.tags.industryProblem ? '✓ Industry Problem' : '✗ Industry Problem'}
                   </Badge>
-                  <Badge 
-                    className={`text-xs ${currentPaper.tags.productPotential ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-                  >
+                  <Badge className={`text-xs ${currentPaper.tags.productPotential ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {currentPaper.tags.productPotential ? '✓ Product Potential' : '✗ Product Potential'}
                   </Badge>
                 </div>
@@ -435,11 +355,9 @@ const PaperReviewer = () => {
                 <div>
                   <h3 className="font-medium text-gray-900 mb-2">Keywords</h3>
                   <div className="flex flex-wrap gap-1">
-                    {currentPaper.keywords.map((keyword, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                    {currentPaper.keywords.map((keyword, index) => <Badge key={index} variant="outline" className="text-xs">
                         {keyword}
-                      </Badge>
-                    ))}
+                      </Badge>)}
                   </div>
                 </div>
 
@@ -448,12 +366,7 @@ const PaperReviewer = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Confidence Comment
                   </label>
-                  <Textarea
-                    value={currentPaper.confidenceComment || ''}
-                    onChange={(e) => updatePaperField('confidenceComment', e.target.value)}
-                    placeholder="Add any confidence notes or comments..."
-                    className="min-h-[60px]"
-                  />
+                  <Textarea value={currentPaper.confidenceComment || ''} onChange={e => updatePaperField('confidenceComment', e.target.value)} placeholder="Add any confidence notes or comments..." className="min-h-[60px]" />
                 </div>
               </div>
             </div>
@@ -462,27 +375,13 @@ const PaperReviewer = () => {
       </div>
 
       {/* Status Bar */}
-      {statusMessage && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white px-4 py-2 text-sm">
+      {statusMessage && <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white px-4 py-2 text-sm">
           {statusMessage}
-        </div>
-      )}
+        </div>}
 
       {/* Dialogs */}
-      <StatisticsDialog 
-        open={showStats} 
-        onOpenChange={setShowStats}
-        papers={papers}
-        filteredPapers={filteredPapers}
-      />
-      <JumpToDialog
-        open={showJumpTo}
-        onOpenChange={setShowJumpTo}
-        maxIndex={filteredPapers.length}
-        onJump={(index) => setCurrentIndex(index - 1)}
-      />
-    </div>
-  );
+      <StatisticsDialog open={showStats} onOpenChange={setShowStats} papers={papers} filteredPapers={filteredPapers} />
+      <JumpToDialog open={showJumpTo} onOpenChange={setShowJumpTo} maxIndex={filteredPapers.length} onJump={index => setCurrentIndex(index - 1)} />
+    </div>;
 };
-
 export default PaperReviewer;
