@@ -51,11 +51,26 @@ const PaperReviewer = () => {
   useEffect(() => {
     const initializeData = async () => {
       setIsLoading(true);
+      setStatusMessage('Loading papers...');
+      console.log('Initializing data...');
+      
       try {
         const initialPapers = await paperDataService.loadChunk(0);
+        console.log('Initial papers loaded:', initialPapers.length);
+        
+        if (initialPapers.length === 0) {
+          console.error('No papers loaded from chunk 0');
+          setStatusMessage('No papers found');
+          return;
+        }
+        
         setPapers(initialPapers);
-        setTotalPapers(27000); // Set your actual total count
-        setStatusMessage('Loaded initial papers');
+        
+        // Get the actual total from the service
+        const status = paperDataService.getLoadingStatus();
+        setTotalPapers(status.totalPapers > 0 ? status.totalPapers : initialPapers.length);
+        
+        setStatusMessage(`Loaded ${initialPapers.length} papers`);
         setTimeout(() => setStatusMessage(''), 2000);
       } catch (error) {
         console.error('Error initializing data:', error);
@@ -90,6 +105,7 @@ const PaperReviewer = () => {
 
   // Apply filters with improved performance
   const applyFilters = useCallback(() => {
+    console.log('Applying filters to', papers.length, 'papers');
     let filtered = [...papers];
 
     // Apply search filter with basic indexing
@@ -125,6 +141,7 @@ const PaperReviewer = () => {
       filtered = [...filtered].sort(() => Math.random() - 0.5);
     }
 
+    console.log('Filtered papers:', filtered.length);
     setFilteredPapers(filtered);
     
     // Adjust current index if needed
@@ -136,9 +153,6 @@ const PaperReviewer = () => {
   useEffect(() => {
     applyFilters();
   }, [applyFilters]);
-
-  const currentPaper = filteredPapers[currentIndex];
-  const progress = filteredPapers.length > 0 ? (currentIndex + 1) / filteredPapers.length * 100 : 0;
 
   const ratePaper = (rating: 'interesting' | 'not-interesting') => {
     if (!currentPaper) return;
@@ -244,11 +258,48 @@ const PaperReviewer = () => {
     });
   };
 
-  if (!currentPaper && !isLoading) {
+  const currentPaper = filteredPapers[currentIndex];
+  const progress = filteredPapers.length > 0 ? (currentIndex + 1) / filteredPapers.length * 100 : 0;
+
+  console.log('Current render state:', {
+    papersLength: papers.length,
+    filteredPapersLength: filteredPapers.length,
+    currentIndex,
+    currentPaper: currentPaper ? currentPaper.title : 'none',
+    isLoading
+  });
+
+  if (isLoading && papers.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-400" />
+          <p className="text-gray-600">Loading papers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentPaper && !isLoading && papers.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">No Papers Found</h2>
+          <p className="text-gray-600 mb-4">Unable to load paper data. Check the console for errors.</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Reload Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentPaper && filteredPapers.length === 0 && papers.length > 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">No Papers Match Your Filters</h2>
           <p className="text-gray-600 mb-4">Try adjusting your filters or search terms.</p>
           <Button onClick={clearFilters} variant="outline">
             <RotateCcw className="w-4 h-4 mr-2" />
