@@ -287,7 +287,7 @@ const PaperReviewer = () => {
       {/* Main Content */}
       <div className="p-6">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <ScrollArea className="h-[calc(100vh-300px)]">
+          <ScrollArea className="h-[calc(100vh-200px)]">
             <div className="p-6 space-y-6">
               {/* Labels and Quick Information */}
               <div>
