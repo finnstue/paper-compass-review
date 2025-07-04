@@ -370,7 +370,7 @@ const PaperReviewer = () => {
                   </Badge>
                   <Badge 
                     variant={currentPaper.rating ? "default" : "outline"} 
-                    className={`text-xs w-24 justify-center ${
+                    className={`text-xs ${
                       currentPaper.rating === 'interesting' ? 'bg-green-100 text-green-800' :
                       currentPaper.rating === 'not-interesting' ? 'bg-red-100 text-red-800' :
                       'text-gray-600'
