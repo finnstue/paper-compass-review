@@ -202,7 +202,6 @@ const PaperReviewer = () => {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Paper Reviewer</h1>
           <div className="flex items-center gap-2">
             {!showSearch ? <Button onClick={() => setShowSearch(true)} variant="outline" size="sm">
                 <Search className="w-4 h-4 mr-2" />
@@ -377,4 +376,5 @@ const PaperReviewer = () => {
       <JumpToDialog open={showJumpTo} onOpenChange={setShowJumpTo} maxIndex={filteredPapers.length} onJump={index => setCurrentIndex(index - 1)} />
     </div>;
 };
+
 export default PaperReviewer;
