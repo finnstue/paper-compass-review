@@ -389,17 +389,17 @@ const PaperReviewer = () => {
                     }
                   </Badge>
                   <Badge 
-                    className={`text-xs ${currentPaper.tags.computerVision ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
+                    className={`text-xs ${currentPaper.tags.computerVision ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
                   >
                     {currentPaper.tags.computerVision ? '✓ Computer Vision' : '✗ Computer Vision'}
                   </Badge>
                   <Badge 
-                    className={`text-xs ${currentPaper.tags.industryProblem ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
+                    className={`text-xs ${currentPaper.tags.industryProblem ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
                   >
                     {currentPaper.tags.industryProblem ? '✓ Industry Problem' : '✗ Industry Problem'}
                   </Badge>
                   <Badge 
-                    className={`text-xs ${currentPaper.tags.productPotential ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
+                    className={`text-xs ${currentPaper.tags.productPotential ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
                   >
                     {currentPaper.tags.productPotential ? '✓ Product Potential' : '✗ Product Potential'}
                   </Badge>
