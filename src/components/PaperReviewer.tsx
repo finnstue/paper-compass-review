@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, BarChart3, Save, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ const PaperReviewer = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnlyUnrated, setShowOnlyUnrated] = useState(false);
   const [showOnlyIndustry, setShowOnlyIndustry] = useState(false);
+  const [showOnlyComputerVision, setShowOnlyComputerVision] = useState(false);
   const [randomOrder, setRandomOrder] = useState(false);
   const [filteredPapers, setFilteredPapers] = useState<Paper[]>(papers);
   const [showStats, setShowStats] = useState(false);
@@ -70,6 +72,11 @@ const PaperReviewer = () => {
       filtered = filtered.filter(paper => paper.isIndustry);
     }
 
+    // Apply computer vision filter
+    if (showOnlyComputerVision) {
+      filtered = filtered.filter(paper => paper.tags.computerVision);
+    }
+
     // Apply random order
     if (randomOrder) {
       filtered = [...filtered].sort(() => Math.random() - 0.5);
@@ -80,7 +87,7 @@ const PaperReviewer = () => {
     if (filtered.length > 0 && currentIndex >= filtered.length) {
       setCurrentIndex(0);
     }
-  }, [papers, searchTerm, showOnlyUnrated, showOnlyIndustry, randomOrder, currentIndex]);
+  }, [papers, searchTerm, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, randomOrder, currentIndex]);
 
   useEffect(() => {
     applyFilters();
@@ -159,6 +166,7 @@ const PaperReviewer = () => {
         setSearchTerm('');
         setShowOnlyUnrated(false);
         setShowOnlyIndustry(false);
+        setShowOnlyComputerVision(false);
         setRandomOrder(false);
         break;
       case 'u':
@@ -167,11 +175,14 @@ const PaperReviewer = () => {
       case 'i':
         setShowOnlyIndustry(!showOnlyIndustry);
         break;
+      case 'v':
+        setShowOnlyComputerVision(!showOnlyComputerVision);
+        break;
       case 'r':
         setRandomOrder(!randomOrder);
         break;
     }
-  }, [currentIndex, filteredPapers.length, showOnlyUnrated, showOnlyIndustry, randomOrder]);
+  }, [currentIndex, filteredPapers.length, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, randomOrder]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -182,6 +193,7 @@ const PaperReviewer = () => {
     setSearchTerm('');
     setShowOnlyUnrated(false);
     setShowOnlyIndustry(false);
+    setShowOnlyComputerVision(false);
     setRandomOrder(false);
     setStatusMessage('Filters cleared');
     setTimeout(() => setStatusMessage(''), 2000);
@@ -209,7 +221,7 @@ const PaperReviewer = () => {
         </div>
       </div>
     );
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -277,6 +289,13 @@ const PaperReviewer = () => {
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox 
+                checked={showOnlyComputerVision} 
+                onCheckedChange={(checked) => setShowOnlyComputerVision(checked === true)}
+              />
+              Computer Vision only (V)
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox 
                 checked={randomOrder} 
                 onCheckedChange={(checked) => setRandomOrder(checked === true)}
               />
@@ -337,17 +356,51 @@ const PaperReviewer = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <ScrollArea className="h-[calc(100vh-300px)]">
             <div className="p-6 space-y-6">
-              {/* Solution Sentence */}
+              {/* Labels and Quick Information */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Solution Sentence
-                </label>
-                <Textarea
-                  value={currentPaper.solutionSentence || ''}
-                  onChange={(e) => updatePaperField('solutionSentence', e.target.value)}
-                  placeholder="Enter a key takeaway sentence..."
-                  className="min-h-[60px]"
-                />
+                <h3 className="font-medium text-gray-900 mb-2">Labels & Information</h3>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    Year: {currentPaper.year}
+                  </Badge>
+                  <Badge 
+                    variant={currentPaper.isIndustry ? "default" : "outline"} 
+                    className={`text-xs ${currentPaper.isIndustry ? 'bg-orange-100 text-orange-800' : 'text-gray-600'}`}
+                  >
+                    {currentPaper.isIndustry ? 'Industry' : 'Academic'}
+                  </Badge>
+                  <Badge 
+                    variant={currentPaper.rating ? "default" : "outline"} 
+                    className={`text-xs ${
+                      currentPaper.rating === 'interesting' ? 'bg-green-100 text-green-800' :
+                      currentPaper.rating === 'not-interesting' ? 'bg-red-100 text-red-800' :
+                      'text-gray-600'
+                    }`}
+                  >
+                    {currentPaper.rating ? 
+                      (currentPaper.rating === 'interesting' ? 'Interesting' : 'Not Interesting') : 
+                      'Not Reviewed'
+                    }
+                  </Badge>
+                  <Badge 
+                    variant={currentPaper.tags.computerVision ? "default" : "outline"} 
+                    className={`text-xs ${currentPaper.tags.computerVision ? 'bg-blue-100 text-blue-800' : 'text-gray-400'}`}
+                  >
+                    {currentPaper.tags.computerVision ? '✓ Computer Vision' : '✗ Computer Vision'}
+                  </Badge>
+                  <Badge 
+                    variant={currentPaper.tags.industryProblem ? "default" : "outline"} 
+                    className={`text-xs ${currentPaper.tags.industryProblem ? 'bg-purple-100 text-purple-800' : 'text-gray-400'}`}
+                  >
+                    {currentPaper.tags.industryProblem ? '✓ Industry Problem' : '✗ Industry Problem'}
+                  </Badge>
+                  <Badge 
+                    variant={currentPaper.tags.productPotential ? "default" : "outline"} 
+                    className={`text-xs ${currentPaper.tags.productPotential ? 'bg-green-100 text-green-800' : 'text-gray-400'}`}
+                  >
+                    {currentPaper.tags.productPotential ? '✓ Product Potential' : '✗ Product Potential'}
+                  </Badge>
+                </div>
               </div>
 
               {/* Layperson Summary */}
@@ -363,39 +416,17 @@ const PaperReviewer = () => {
                 />
               </div>
 
-              {/* Quick Information */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Quick Information</h3>
-                <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <span>Year: {currentPaper.year}</span>
-                  <span>Type: {currentPaper.isIndustry ? 'Industry' : 'Academic'}</span>
-                  <span>Status: {currentPaper.rating ? 
-                    `Rated as ${currentPaper.rating === 'interesting' ? 'Interesting' : 'Not Interesting'}` : 
-                    'Not yet reviewed'
-                  }</span>
-                </div>
-              </div>
-
-              {/* Label Pills */}
+              {/* Solution Sentence */}
               <div>
-                <h3 className="font-medium text-gray-900 mb-2">Labels</h3>
-                <div className="flex flex-wrap gap-2">
-                  {currentPaper.tags.computerVision && (
-                    <Badge variant="default" className="bg-blue-100 text-blue-800">
-                      Computer Vision
-                    </Badge>
-                  )}
-                  {currentPaper.tags.industryProblem && (
-                    <Badge variant="default" className="bg-purple-100 text-purple-800">
-                      Industry Problem
-                    </Badge>
-                  )}
-                  {currentPaper.tags.productPotential && (
-                    <Badge variant="default" className="bg-green-100 text-green-800">
-                      Product Potential
-                    </Badge>
-                  )}
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Solution Sentence
+                </label>
+                <Textarea
+                  value={currentPaper.solutionSentence || ''}
+                  onChange={(e) => updatePaperField('solutionSentence', e.target.value)}
+                  placeholder="Enter a key takeaway sentence..."
+                  className="min-h-[60px]"
+                />
               </div>
 
               {/* Detailed Information */}
