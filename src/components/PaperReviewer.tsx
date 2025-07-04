@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, BarChart3, Save, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -105,15 +104,9 @@ const PaperReviewer = () => {
     );
     setPapers(updatedPapers);
     
-    const ratingText = rating === 'interesting' ? 'Interesting' : 'Not Interesting';
-    setStatusMessage(`Marked as ${ratingText} and saved automatically`);
-    setTimeout(() => setStatusMessage(''), 3000);
-    
     // Move to next paper
     if (currentIndex < filteredPapers.length - 1) {
       setCurrentIndex(currentIndex + 1);
-    } else {
-      setStatusMessage('Reached end of papers');
     }
   };
 
@@ -377,7 +370,7 @@ const PaperReviewer = () => {
                   </Badge>
                   <Badge 
                     variant={currentPaper.rating ? "default" : "outline"} 
-                    className={`text-xs ${
+                    className={`text-xs w-24 justify-center ${
                       currentPaper.rating === 'interesting' ? 'bg-green-100 text-green-800' :
                       currentPaper.rating === 'not-interesting' ? 'bg-red-100 text-red-800' :
                       'text-gray-600'
@@ -408,26 +401,18 @@ const PaperReviewer = () => {
 
               {/* Layperson Summary */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Layperson Summary
-                </label>
-                <div className="p-3 bg-gray-50 rounded-md border">
-                  <p className="text-gray-700 text-sm">
-                    {currentPaper.laypersonSummary || 'No summary provided'}
-                  </p>
-                </div>
+                <h3 className="font-medium text-gray-900 mb-2">Layperson Summary</h3>
+                <p className="text-gray-700">
+                  {currentPaper.laypersonSummary || 'No summary provided'}
+                </p>
               </div>
 
               {/* Solution Sentence */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Solution Sentence
-                </label>
-                <div className="p-3 bg-gray-50 rounded-md border">
-                  <p className="text-gray-700 text-sm">
-                    {currentPaper.solutionSentence || 'No solution sentence provided'}
-                  </p>
-                </div>
+                <h3 className="font-medium text-gray-900 mb-2">Solution Sentence</h3>
+                <p className="text-gray-700">
+                  {currentPaper.solutionSentence || 'No solution sentence provided'}
+                </p>
               </div>
 
               {/* Detailed Information */}
