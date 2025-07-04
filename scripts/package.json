@@ -1,0 +1,10 @@
+
+{
+  "name": "data-processing-scripts",
+  "version": "1.0.0",
+  "description": "Scripts for processing tourism data",
+  "main": "processTourismData.js",
+  "scripts": {
+    "process": "node processTourismData.js"
+  }
+}
