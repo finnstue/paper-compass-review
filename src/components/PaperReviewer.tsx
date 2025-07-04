@@ -43,6 +43,7 @@ const PaperReviewer = () => {
   const [filteredPapers, setFilteredPapers] = useState<Paper[]>(papers);
   const [showStats, setShowStats] = useState(false);
   const [showJumpTo, setShowJumpTo] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
 
   // Filter papers based on current filters
@@ -129,7 +130,8 @@ const PaperReviewer = () => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
       if (e.key === 'f' && e.ctrlKey) {
         e.preventDefault();
-        document.getElementById('search-input')?.focus();
+        setShowSearch(true);
+        setTimeout(() => document.getElementById('search-input')?.focus(), 100);
       }
       return;
     }
@@ -159,7 +161,8 @@ const PaperReviewer = () => {
         break;
       case 'f':
         if (!e.ctrlKey) {
-          document.getElementById('search-input')?.focus();
+          setShowSearch(true);
+          setTimeout(() => document.getElementById('search-input')?.focus(), 100);
         }
         break;
       case 'c':
@@ -168,6 +171,7 @@ const PaperReviewer = () => {
         setShowOnlyIndustry(false);
         setShowOnlyComputerVision(false);
         setRandomOrder(false);
+        setShowSearch(false);
         break;
       case 'u':
         setShowOnlyUnrated(!showOnlyUnrated);
@@ -195,6 +199,7 @@ const PaperReviewer = () => {
     setShowOnlyIndustry(false);
     setShowOnlyComputerVision(false);
     setRandomOrder(false);
+    setShowSearch(false);
     setStatusMessage('Filters cleared');
     setTimeout(() => setStatusMessage(''), 2000);
   };
@@ -230,6 +235,28 @@ const PaperReviewer = () => {
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-gray-900">Paper Reviewer</h1>
           <div className="flex items-center gap-2">
+            {!showSearch ? (
+              <Button onClick={() => setShowSearch(true)} variant="outline" size="sm">
+                <Search className="w-4 h-4 mr-2" />
+                Search (F)
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    id="search-input"
+                    placeholder="Search papers..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-64"
+                  />
+                </div>
+                <Button onClick={() => setShowSearch(false)} variant="outline" size="sm">
+                  Close
+                </Button>
+              </div>
+            )}
             <Button onClick={() => setShowStats(true)} variant="outline" size="sm">
               <BarChart3 className="w-4 h-4 mr-2" />
               Statistics (S)
@@ -254,54 +281,39 @@ const PaperReviewer = () => {
           <Progress value={progress} className="h-2" />
         </div>
 
-        {/* Search and Filters */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                id="search-input"
-                placeholder="Search papers... (F to focus, Ctrl+F)"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button onClick={clearFilters} variant="outline" size="sm">
-              Clear (C)
-            </Button>
-          </div>
-          
-          <div className="flex items-center gap-4 text-sm">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox 
-                checked={showOnlyUnrated} 
-                onCheckedChange={(checked) => setShowOnlyUnrated(checked === true)}
-              />
-              Hide rated (U)
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox 
-                checked={showOnlyIndustry} 
-                onCheckedChange={(checked) => setShowOnlyIndustry(checked === true)}
-              />
-              Industry only (I)
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox 
-                checked={showOnlyComputerVision} 
-                onCheckedChange={(checked) => setShowOnlyComputerVision(checked === true)}
-              />
-              Computer Vision only (V)
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox 
-                checked={randomOrder} 
-                onCheckedChange={(checked) => setRandomOrder(checked === true)}
-              />
-              Random order (R)
-            </label>
-          </div>
+        {/* Filters */}
+        <div className="flex items-center gap-4 text-sm mb-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox 
+              checked={showOnlyUnrated} 
+              onCheckedChange={(checked) => setShowOnlyUnrated(checked === true)}
+            />
+            Hide rated (U)
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox 
+              checked={showOnlyIndustry} 
+              onCheckedChange={(checked) => setShowOnlyIndustry(checked === true)}
+            />
+            Industry only (I)
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox 
+              checked={showOnlyComputerVision} 
+              onCheckedChange={(checked) => setShowOnlyComputerVision(checked === true)}
+            />
+            Computer Vision only (V)
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox 
+              checked={randomOrder} 
+              onCheckedChange={(checked) => setRandomOrder(checked === true)}
+            />
+            Random order (R)
+          </label>
+          <Button onClick={clearFilters} variant="outline" size="sm">
+            Clear (C)
+          </Button>
         </div>
 
         {/* Navigation and Rating */}
@@ -361,13 +373,7 @@ const PaperReviewer = () => {
                 <h3 className="font-medium text-gray-900 mb-2">Labels & Information</h3>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="outline" className="text-xs">
-                    Year: {currentPaper.year}
-                  </Badge>
-                  <Badge 
-                    variant={currentPaper.isIndustry ? "default" : "outline"} 
-                    className={`text-xs ${currentPaper.isIndustry ? 'bg-orange-100 text-orange-800' : 'text-gray-600'}`}
-                  >
-                    {currentPaper.isIndustry ? 'Industry' : 'Academic'}
+                    {currentPaper.year}
                   </Badge>
                   <Badge 
                     variant={currentPaper.rating ? "default" : "outline"} 
@@ -383,20 +389,17 @@ const PaperReviewer = () => {
                     }
                   </Badge>
                   <Badge 
-                    variant={currentPaper.tags.computerVision ? "default" : "outline"} 
-                    className={`text-xs ${currentPaper.tags.computerVision ? 'bg-blue-100 text-blue-800' : 'text-gray-400'}`}
+                    className={`text-xs ${currentPaper.tags.computerVision ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
                   >
                     {currentPaper.tags.computerVision ? '✓ Computer Vision' : '✗ Computer Vision'}
                   </Badge>
                   <Badge 
-                    variant={currentPaper.tags.industryProblem ? "default" : "outline"} 
-                    className={`text-xs ${currentPaper.tags.industryProblem ? 'bg-purple-100 text-purple-800' : 'text-gray-400'}`}
+                    className={`text-xs ${currentPaper.tags.industryProblem ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
                   >
                     {currentPaper.tags.industryProblem ? '✓ Industry Problem' : '✗ Industry Problem'}
                   </Badge>
                   <Badge 
-                    variant={currentPaper.tags.productPotential ? "default" : "outline"} 
-                    className={`text-xs ${currentPaper.tags.productPotential ? 'bg-green-100 text-green-800' : 'text-gray-400'}`}
+                    className={`text-xs ${currentPaper.tags.productPotential ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
                   >
                     {currentPaper.tags.productPotential ? '✓ Product Potential' : '✗ Product Potential'}
                   </Badge>
@@ -408,12 +411,11 @@ const PaperReviewer = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Layperson Summary
                 </label>
-                <Textarea
-                  value={currentPaper.laypersonSummary || ''}
-                  onChange={(e) => updatePaperField('laypersonSummary', e.target.value)}
-                  placeholder="Explain this work for non-experts..."
-                  className="min-h-[80px]"
-                />
+                <div className="p-3 bg-gray-50 rounded-md border">
+                  <p className="text-gray-700 text-sm">
+                    {currentPaper.laypersonSummary || 'No summary provided'}
+                  </p>
+                </div>
               </div>
 
               {/* Solution Sentence */}
@@ -421,12 +423,11 @@ const PaperReviewer = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Solution Sentence
                 </label>
-                <Textarea
-                  value={currentPaper.solutionSentence || ''}
-                  onChange={(e) => updatePaperField('solutionSentence', e.target.value)}
-                  placeholder="Enter a key takeaway sentence..."
-                  className="min-h-[60px]"
-                />
+                <div className="p-3 bg-gray-50 rounded-md border">
+                  <p className="text-gray-700 text-sm">
+                    {currentPaper.solutionSentence || 'No solution sentence provided'}
+                  </p>
+                </div>
               </div>
 
               {/* Detailed Information */}
