@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Loader2, RotateCcw, Upload, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -328,7 +327,6 @@ const PaperReviewer = () => {
   const currentPaper = filteredPapers[currentIndex];
   const progress = filteredPapers.length > 0 ? (currentIndex + 1) / filteredPapers.length * 100 : 0;
 
-  // Show upload screen if no CSV has been uploaded
   if (!csvUploaded && !isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -529,22 +527,6 @@ const PaperReviewer = () => {
                         <div>
                           <h3 className="font-medium text-gray-900 mb-2">Abstract</h3>
                           <p className="text-gray-700 leading-relaxed">{currentPaper.abstract}</p>
-                        </div>
-
-                        <div>
-                          <h3 className="font-medium text-gray-900 mb-2">Authors</h3>
-                          <p className="text-gray-700">{currentPaper.authors.join(', ')}</p>
-                        </div>
-
-                        <div>
-                          <h3 className="font-medium text-gray-900 mb-2">Keywords</h3>
-                          <div className="flex flex-wrap gap-1">
-                            {currentPaper.keywords.map((keyword, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
-                                {keyword}
-                              </Badge>
-                            ))}
-                          </div>
                         </div>
 
                         {/* Confidence Comment */}
