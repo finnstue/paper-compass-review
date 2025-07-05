@@ -14,6 +14,42 @@ export interface CSVRow {
   Confidence_Comment: string;
 }
 
+// Proper CSV parsing function that handles quoted fields
+const parseCSVLine = (line: string): string[] => {
+  const values: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  let i = 0;
+
+  while (i < line.length) {
+    const char = line[i];
+    
+    if (char === '"') {
+      if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+        // Handle escaped quotes ("")
+        current += '"';
+        i += 2;
+      } else {
+        // Toggle quote state
+        inQuotes = !inQuotes;
+        i++;
+      }
+    } else if (char === ',' && !inQuotes) {
+      // End of field
+      values.push(current.trim());
+      current = '';
+      i++;
+    } else {
+      current += char;
+      i++;
+    }
+  }
+  
+  // Add the last field
+  values.push(current.trim());
+  return values;
+};
+
 export const transformCSVRowToPaper = (row: CSVRow, id: number) => {
   // Parse keywords from comma-separated string
   const keywords = row.Keywords ? row.Keywords.split(',').map(k => k.trim()).filter(k => k.length > 0) : [];
@@ -79,21 +115,53 @@ export const processCSVToPapers = (csvText: string) => {
     throw new Error('CSV file must contain at least a header row and one data row');
   }
   
-  // Parse header row
-  const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
+  // Parse header row using proper CSV parsing
+  const headers = parseCSVLine(lines[0]).map(header => header.replace(/"/g, ''));
   console.log('CSV headers:', headers);
+  
+  // Create a mapping for the fields we care about
+  const fieldMapping: { [key: string]: string } = {
+    'Title': 'Title',
+    'Year': 'Year', 
+    'Abstract': 'Abstract',
+    'Author Keywords': 'Keywords', // Map Author Keywords to Keywords
+    'Index Keywords': 'Keywords', // We'll handle combining these
+    'industry': 'industry',
+    'interesting': 'interesting',
+    'Label_Uses_Computer_Vision': 'Label_Uses_Computer_Vision',
+    'Label_Solves_Industry_Problem': 'Label_Solves_Industry_Problem',
+    'Label_Can_Be_Product': 'Label_Can_Be_Product',
+    'Solution_Sentence': 'Solution_Sentence',
+    'Layperson_Summary': 'Layperson_Summary',
+    'Confidence_Comment': 'Confidence_Comment'
+  };
   
   // Parse data rows
   const papers = [];
   for (let i = 1; i < lines.length; i++) {
     try {
-      // Simple CSV parsing - split by comma and remove quotes
-      const values = lines[i].split(',').map(value => value.trim().replace(/"/g, ''));
+      // Use proper CSV parsing
+      const values = parseCSVLine(lines[i]);
       
-      // Create row object
+      // Create row object with proper field mapping
       const row: any = {};
       headers.forEach((header, index) => {
-        row[header] = values[index] || '';
+        const mappedField = fieldMapping[header];
+        if (mappedField) {
+          const value = values[index] || '';
+          
+          // Handle keywords combination
+          if (mappedField === 'Keywords') {
+            if (!row.Keywords) {
+              row.Keywords = value;
+            } else if (value) {
+              // Combine Author Keywords and Index Keywords
+              row.Keywords = row.Keywords + (row.Keywords ? '; ' : '') + value;
+            }
+          } else {
+            row[mappedField] = value;
+          }
+        }
       });
       
       // Transform to paper format
