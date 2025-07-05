@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Search, BarChart3, Save, Loader2 } from 'lucide-react';
+import { Search, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -24,7 +24,6 @@ interface AppSidebarProps {
   filteredPapersLength: number;
   isLoading: boolean;
   ratePaper: (rating: 'interesting' | 'not-interesting') => void;
-  setShowStats: (show: boolean) => void;
   setShowJumpTo: (show: boolean) => void;
   saveProgress: () => void;
   showOnlyUnrated: boolean;
@@ -49,7 +48,6 @@ export function AppSidebar({
   filteredPapersLength,
   isLoading,
   ratePaper,
-  setShowStats,
   setShowJumpTo,
   saveProgress,
   showOnlyUnrated,
@@ -106,13 +104,9 @@ export function AppSidebar({
           <SidebarGroupLabel>Actions</SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="space-y-2">
-              <Button onClick={() => setShowStats(true)} variant="outline" size="sm" className="w-full justify-start">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Statistics (S)
-              </Button>
               <Button onClick={saveProgress} variant="outline" size="sm" className="w-full justify-start">
                 <Save className="w-4 h-4 mr-2" />
-                Save Progress
+                Save Progress (S)
               </Button>
             </div>
           </SidebarGroupContent>

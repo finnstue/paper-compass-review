@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
-import { StatisticsDialog } from './StatisticsDialog';
 import { JumpToDialog } from './JumpToDialog';
 import { AppSidebar } from './AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -42,7 +41,6 @@ const PaperReviewer = () => {
   const [showOnlyProduct, setShowOnlyProduct] = useState(false);
   const [randomOrder, setRandomOrder] = useState(false);
   const [filteredPapers, setFilteredPapers] = useState<Paper[]>([]);
-  const [showStats, setShowStats] = useState(false);
   const [showJumpTo, setShowJumpTo] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -187,6 +185,61 @@ const PaperReviewer = () => {
     setPapers(updatedPapers);
   };
 
+  const saveProgress = () => {
+    try {
+      // Convert papers back to CSV format
+      const headers = [
+        'Title', 'Year', 'Abstract', 'Keywords', 'industry', 'interesting',
+        'Label_Uses_Computer_Vision', 'Label_Solves_Industry_Problem', 'Label_Can_Be_Product',
+        'Solution_Sentence', 'Layperson_Summary', 'Confidence_Comment'
+      ];
+
+      const csvContent = [
+        headers.join(','),
+        ...papers.map(paper => [
+          `"${paper.title.replace(/"/g, '""')}"`,
+          paper.year,
+          `"${paper.abstract.replace(/"/g, '""')}"`,
+          `"${paper.keywords.join(', ')}"`,
+          paper.isIndustry ? 'true' : 'false',
+          paper.rating === 'interesting' ? 'true' : paper.rating === 'not-interesting' ? 'false' : '',
+          paper.tags.computerVision ? 'true' : 'false',
+          paper.tags.industryProblem ? 'true' : 'false',
+          paper.tags.productPotential ? 'true' : 'false',
+          `"${(paper.solutionSentence || '').replace(/"/g, '""')}"`,
+          `"${(paper.laypersonSummary || '').replace(/"/g, '""')}"`,
+          `"${(paper.confidenceComment || '').replace(/"/g, '""')}"`
+        ].join(','))
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `papers_reviewed_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setStatusMessage('Progress saved successfully');
+      setTimeout(() => setStatusMessage(''), 2000);
+      toast({
+        title: "Progress Saved",
+        description: "Your ratings and progress have been downloaded as a CSV file."
+      });
+    } catch (error) {
+      console.error('Error saving progress:', error);
+      toast({
+        title: "Save Error",
+        description: "Failed to save progress. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!csvUploaded) return;
     
@@ -219,7 +272,7 @@ const PaperReviewer = () => {
         setShowJumpTo(true);
         break;
       case 's':
-        setShowStats(true);
+        saveProgress();
         break;
       case 'f':
         if (!e.ctrlKey) {
@@ -269,15 +322,6 @@ const PaperReviewer = () => {
     setShowSearch(false);
     setStatusMessage('Filters cleared');
     setTimeout(() => setStatusMessage(''), 2000);
-  };
-
-  const saveProgress = () => {
-    setStatusMessage('Progress saved successfully');
-    setTimeout(() => setStatusMessage(''), 2000);
-    toast({
-      title: "Progress Saved",
-      description: "Your ratings and progress have been saved."
-    });
   };
 
   // Get current paper from the updated filtered papers
@@ -368,7 +412,6 @@ const PaperReviewer = () => {
           filteredPapersLength={filteredPapers.length}
           isLoading={isLoading}
           ratePaper={ratePaper}
-          setShowStats={setShowStats}
           setShowJumpTo={setShowJumpTo}
           saveProgress={saveProgress}
           showOnlyUnrated={showOnlyUnrated}
@@ -538,12 +581,6 @@ const PaperReviewer = () => {
             )}
 
             {/* Dialogs */}
-            <StatisticsDialog
-              open={showStats}
-              onOpenChange={setShowStats}
-              papers={papers}
-              filteredPapers={filteredPapers}
-            />
             <JumpToDialog
               open={showJumpTo}
               onOpenChange={setShowJumpTo}
