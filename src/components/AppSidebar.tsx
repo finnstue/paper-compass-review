@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Search, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, BarChart3, Save, Loader2 } from 'lucide-react';
+import { Search, BarChart3, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -33,6 +33,8 @@ interface AppSidebarProps {
   setShowOnlyIndustry: (show: boolean) => void;
   showOnlyComputerVision: boolean;
   setShowOnlyComputerVision: (show: boolean) => void;
+  showOnlyProduct: boolean;
+  setShowOnlyProduct: (show: boolean) => void;
   randomOrder: boolean;
   setRandomOrder: (random: boolean) => void;
 }
@@ -56,6 +58,8 @@ export function AppSidebar({
   setShowOnlyIndustry,
   showOnlyComputerVision,
   setShowOnlyComputerVision,
+  showOnlyProduct,
+  setShowOnlyProduct,
   randomOrder,
   setRandomOrder,
 }: AppSidebarProps) {
@@ -92,67 +96,6 @@ export function AppSidebar({
                   </Button>
                 </div>
               )}
-            </div>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <div className="space-y-2">
-              <Button
-                onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-                disabled={currentIndex === 0 || isLoading}
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-              >
-                <ChevronLeft className="w-4 h-4 mr-2" />
-                Previous (P)
-              </Button>
-              <Button
-                onClick={() => setCurrentIndex(Math.min(filteredPapersLength - 1, currentIndex + 1))}
-                disabled={currentIndex === filteredPapersLength - 1 || isLoading}
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-              >
-                <ChevronRight className="w-4 h-4 mr-2" />
-                Next (N)
-              </Button>
-              <Button onClick={() => setShowJumpTo(true)} variant="outline" size="sm" className="w-full justify-start">
-                Jump (J)
-              </Button>
-            </div>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Rating</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <div className="space-y-2">
-              <Button
-                onClick={() => ratePaper('interesting')}
-                className="bg-green-600 hover:bg-green-700 text-white w-full justify-start"
-                size="sm"
-                disabled={isLoading}
-              >
-                <ThumbsUp className="w-4 h-4 mr-2" />
-                Interesting (M)
-              </Button>
-              <Button
-                onClick={() => ratePaper('not-interesting')}
-                className="bg-red-600 hover:bg-red-700 text-white w-full justify-start"
-                size="sm"
-                disabled={isLoading}
-              >
-                <ThumbsDown className="w-4 h-4 mr-2" />
-                Not Interesting (X)
-              </Button>
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -201,6 +144,13 @@ export function AppSidebar({
                   onCheckedChange={(checked) => setShowOnlyComputerVision(checked === true)}
                 />
                 Computer Vision (V)
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <Checkbox
+                  checked={showOnlyProduct}
+                  onCheckedChange={(checked) => setShowOnlyProduct(checked === true)}
+                />
+                Product potential (B)
               </label>
               <label className="flex items-center gap-2 cursor-pointer text-sm">
                 <Checkbox

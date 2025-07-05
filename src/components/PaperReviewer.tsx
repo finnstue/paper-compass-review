@@ -38,6 +38,7 @@ const PaperReviewer = () => {
   const [showOnlyUnrated, setShowOnlyUnrated] = useState(false);
   const [showOnlyIndustry, setShowOnlyIndustry] = useState(false);
   const [showOnlyComputerVision, setShowOnlyComputerVision] = useState(false);
+  const [showOnlyProduct, setShowOnlyProduct] = useState(false);
   const [randomOrder, setRandomOrder] = useState(false);
   const [filteredPapers, setFilteredPapers] = useState<Paper[]>([]);
   const [showStats, setShowStats] = useState(false);
@@ -136,6 +137,10 @@ const PaperReviewer = () => {
       filtered = filtered.filter(paper => paper.tags.computerVision);
     }
 
+    if (showOnlyProduct) {
+      filtered = filtered.filter(paper => paper.tags.productPotential);
+    }
+
     // Apply random order
     if (randomOrder) {
       filtered = [...filtered].sort(() => Math.random() - 0.5);
@@ -148,7 +153,7 @@ const PaperReviewer = () => {
     if (filtered.length > 0 && currentIndex >= filtered.length) {
       setCurrentIndex(0);
     }
-  }, [papers, searchTerm, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, randomOrder, currentIndex]);
+  }, [papers, searchTerm, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, showOnlyProduct, randomOrder, currentIndex]);
 
   useEffect(() => {
     applyFilters();
@@ -218,6 +223,7 @@ const PaperReviewer = () => {
         setShowOnlyUnrated(false);
         setShowOnlyIndustry(false);
         setShowOnlyComputerVision(false);
+        setShowOnlyProduct(false);
         setRandomOrder(false);
         setShowSearch(false);
         break;
@@ -230,11 +236,14 @@ const PaperReviewer = () => {
       case 'v':
         setShowOnlyComputerVision(!showOnlyComputerVision);
         break;
+      case 'b':
+        setShowOnlyProduct(!showOnlyProduct);
+        break;
       case 'r':
         setRandomOrder(!randomOrder);
         break;
     }
-  }, [currentIndex, filteredPapers.length, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, randomOrder]);
+  }, [currentIndex, filteredPapers.length, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, showOnlyProduct, randomOrder]);
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -244,6 +253,7 @@ const PaperReviewer = () => {
     setShowOnlyUnrated(false);
     setShowOnlyIndustry(false);
     setShowOnlyComputerVision(false);
+    setShowOnlyProduct(false);
     setRandomOrder(false);
     setShowSearch(false);
     setStatusMessage('Filters cleared');
@@ -332,6 +342,8 @@ const PaperReviewer = () => {
           setShowOnlyIndustry={setShowOnlyIndustry}
           showOnlyComputerVision={showOnlyComputerVision}
           setShowOnlyComputerVision={setShowOnlyComputerVision}
+          showOnlyProduct={showOnlyProduct}
+          setShowOnlyProduct={setShowOnlyProduct}
           randomOrder={randomOrder}
           setRandomOrder={setRandomOrder}
         />
