@@ -292,7 +292,17 @@ const PaperReviewer = () => {
         setShowOnlyUnrated(!showOnlyUnrated);
         break;
       case 'i':
-        setShowOnlyIndustry(!showOnlyIndustry);
+        // Toggle Industry Problem tag on current paper
+        if (currentPaper) {
+          const updatedPapers = papers.map(paper => paper.id === currentPaper.id ? {
+            ...paper,
+            tags: {
+              ...paper.tags,
+              industryProblem: !paper.tags.industryProblem
+            }
+          } : paper);
+          setPapers(updatedPapers);
+        }
         break;
       case 'v':
         setShowOnlyComputerVision(!showOnlyComputerVision);
@@ -304,7 +314,7 @@ const PaperReviewer = () => {
         setRandomOrder(!randomOrder);
         break;
     }
-  }, [currentIndex, filteredPapers.length, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, showOnlyProduct, randomOrder, csvUploaded]);
+  }, [currentIndex, filteredPapers.length, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, showOnlyProduct, randomOrder, csvUploaded, currentPaper, papers]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
