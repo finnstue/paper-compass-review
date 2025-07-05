@@ -369,12 +369,6 @@ const PaperReviewer = () => {
                 </div>
                 <Progress value={progress} className="h-2" />
               </div>
-              
-              {/* Rating Instructions */}
-              <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                Press <kbd className="px-1 py-0.5 bg-white border rounded text-xs">M</kbd> for interesting, 
-                <kbd className="px-1 py-0.5 bg-white border rounded text-xs mx-1">X</kbd> for not interesting
-              </div>
             </div>
 
             {/* Main Content */}
