@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, BarChart3, Save, RotateCcw, Loader2 } from 'lucide-react';
+import { Loader2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { StatisticsDialog } from './StatisticsDialog';
 import { JumpToDialog } from './JumpToDialog';
+import { AppSidebar } from './AppSidebar';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { paperDataService } from '../services/paperDataService';
 
 export interface Paper {
@@ -311,292 +311,202 @@ const PaperReviewer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            {!showSearch ? (
-              <Button onClick={() => setShowSearch(true)} variant="outline" size="sm">
-                <Search className="w-4 h-4 mr-2" />
-                Search (F)
-              </Button>
-            ) : (
-              <div className="flex gap-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    id="search-input"
-                    placeholder="Search papers..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-48"
-                  />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          showSearch={showSearch}
+          setShowSearch={setShowSearch}
+          currentIndex={currentIndex}
+          setCurrentIndex={setCurrentIndex}
+          filteredPapersLength={filteredPapers.length}
+          isLoading={isLoading}
+          ratePaper={ratePaper}
+          setShowStats={setShowStats}
+          setShowJumpTo={setShowJumpTo}
+          saveProgress={saveProgress}
+          showOnlyUnrated={showOnlyUnrated}
+          setShowOnlyUnrated={setShowOnlyUnrated}
+          showOnlyIndustry={showOnlyIndustry}
+          setShowOnlyIndustry={setShowOnlyIndustry}
+          showOnlyComputerVision={showOnlyComputerVision}
+          setShowOnlyComputerVision={setShowOnlyComputerVision}
+          randomOrder={randomOrder}
+          setRandomOrder={setRandomOrder}
+        />
+
+        <SidebarInset>
+          <div className="min-h-screen bg-gray-50">
+            {/* Header with Progress */}
+            <div className="bg-white border-b border-gray-200 p-4">
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600">
+                    Paper {currentIndex + 1} of {filteredPapers.length}
+                    {filteredPapers.length !== totalPapers && ` (${totalPapers} total)`}
+                    {searchTerm && ' (filtered)'}
+                    {randomOrder && ' (random order)'}
+                  </span>
+                  <span className="text-sm text-gray-600">{Math.round(progress)}% complete</span>
                 </div>
-                <Button onClick={() => setShowSearch(false)} variant="outline" size="sm">
-                  Close
-                </Button>
+                <Progress value={progress} className="h-2" />
               </div>
-            )}
-            
-            {/* Navigation buttons */}
-            <Button
-              onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-              disabled={currentIndex === 0 || isLoading}
-              variant="outline"
-              size="sm"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Prev (P)
-            </Button>
-            <Button
-              onClick={() => setCurrentIndex(Math.min(filteredPapers.length - 1, currentIndex + 1))}
-              disabled={currentIndex === filteredPapers.length - 1 || isLoading}
-              variant="outline"
-              size="sm"
-            >
-              Next (N)
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-            <Button onClick={() => setShowJumpTo(true)} variant="outline" size="sm">
-              Jump (J)
-            </Button>
-            
-            {/* Rating buttons */}
-            <Button
-              onClick={() => ratePaper('interesting')}
-              className="bg-green-600 hover:bg-green-700 text-white"
-              size="sm"
-              disabled={isLoading}
-            >
-              <ThumbsUp className="w-4 h-4" />
-              Yes (M)
-            </Button>
-            <Button
-              onClick={() => ratePaper('not-interesting')}
-              className="bg-red-600 hover:bg-red-700 text-white"
-              size="sm"
-              disabled={isLoading}
-            >
-              <ThumbsDown className="w-4 h-4" />
-              No (X)
-            </Button>
-            
-            <Button onClick={() => setShowStats(true)} variant="outline" size="sm">
-              <BarChart3 className="w-4 h-4" />
-              Stats (S)
-            </Button>
-            <Button onClick={saveProgress} variant="outline" size="sm">
-              <Save className="w-4 h-4" />
-              Save
-            </Button>
-
-            {isLoading && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Loading...
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Progress */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">
-              Paper {currentIndex + 1} of {filteredPapers.length}
-              {filteredPapers.length !== totalPapers && ` (${totalPapers} total)`}
-              {searchTerm && ' (filtered)'}
-              {randomOrder && ' (random order)'}
-            </span>
-            <span className="text-sm text-gray-600">{Math.round(progress)}% complete</span>
-          </div>
-          <Progress value={progress} className="h-2" />
-        </div>
-
-        {/* Filters */}
-        <div className="flex items-center gap-4 text-sm">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox
-              checked={showOnlyUnrated}
-              onCheckedChange={(checked) => setShowOnlyUnrated(checked === true)}
-            />
-            Hide rated (U)
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox
-              checked={showOnlyIndustry}
-              onCheckedChange={(checked) => setShowOnlyIndustry(checked === true)}
-            />
-            Industry only (I)
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox
-              checked={showOnlyComputerVision}
-              onCheckedChange={(checked) => setShowOnlyComputerVision(checked === true)}
-            />
-            Computer Vision only (V)
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox
-              checked={randomOrder}
-              onCheckedChange={(checked) => setRandomOrder(checked === true)}
-            />
-            Random order (R)
-          </label>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="p-6">
-        {currentPaper ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <ScrollArea className="h-[calc(100vh-200px)]">
-              <div className="p-6 space-y-6">
-                {/* Labels and Quick Information */}
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Labels</h3>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {currentPaper.year}
-                    </Badge>
-                    <Badge
-                      variant={currentPaper.rating ? "default" : "outline"}
-                      className={`text-xs ${
-                        currentPaper.rating === 'interesting'
-                          ? 'bg-green-100 text-green-800'
-                          : currentPaper.rating === 'not-interesting'
-                          ? 'bg-red-100 text-red-800'
-                          : 'text-gray-600'
-                      }`}
-                    >
-                      {currentPaper.rating
-                        ? currentPaper.rating === 'interesting'
-                          ? 'Interesting'
-                          : 'Not Interesting'
-                        : 'Not Reviewed'}
-                    </Badge>
-                    <Badge
-                      className={`text-xs ${
-                        currentPaper.tags.computerVision
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {currentPaper.tags.computerVision ? '✓ Computer Vision' : '✗ Computer Vision'}
-                    </Badge>
-                    <Badge
-                      className={`text-xs ${
-                        currentPaper.tags.industryProblem
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {currentPaper.tags.industryProblem ? '✓ Industry Problem' : '✗ Industry Problem'}
-                    </Badge>
-                    <Badge
-                      className={`text-xs ${
-                        currentPaper.tags.productPotential
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {currentPaper.tags.productPotential ? '✓ Product Potential' : '✗ Product Potential'}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Layperson Summary */}
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Layperson Summary</h3>
-                  <p className="text-gray-800">
-                    {currentPaper.laypersonSummary || 'No summary provided'}
-                  </p>
-                </div>
-
-                {/* Solution Sentence */}
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Solution Sentence</h3>
-                  <p className="text-gray-800">
-                    {currentPaper.solutionSentence || 'No solution sentence provided'}
-                  </p>
-                </div>
-
-                {/* Detailed Information */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">Title</h3>
-                    <p className="text-gray-800">{currentPaper.title}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">Abstract</h3>
-                    <p className="text-gray-700 leading-relaxed">{currentPaper.abstract}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">Authors</h3>
-                    <p className="text-gray-700">{currentPaper.authors.join(', ')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">Keywords</h3>
-                    <div className="flex flex-wrap gap-1">
-                      {currentPaper.keywords.map((keyword, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {keyword}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Confidence Comment */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Confidence Comment
-                    </label>
-                    <Textarea
-                      value={currentPaper.confidenceComment || ''}
-                      onChange={(e) => updatePaperField('confidenceComment', e.target.value)}
-                      placeholder="Add any confidence notes or comments..."
-                      className="min-h-[60px]"
-                    />
-                  </div>
-                </div>
-              </div>
-            </ScrollArea>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-[calc(100vh-200px)] flex items-center justify-center">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-600">Loading papers...</p>
             </div>
+
+            {/* Main Content */}
+            <div className="p-6">
+              {currentPaper ? (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                  <ScrollArea className="h-[calc(100vh-200px)]">
+                    <div className="p-6 space-y-6">
+                      {/* Labels and Quick Information */}
+                      <div>
+                        <h3 className="font-medium text-gray-900 mb-2">Labels</h3>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {currentPaper.year}
+                          </Badge>
+                          <Badge
+                            variant={currentPaper.rating ? "default" : "outline"}
+                            className={`text-xs ${
+                              currentPaper.rating === 'interesting'
+                                ? 'bg-green-100 text-green-800'
+                                : currentPaper.rating === 'not-interesting'
+                                ? 'bg-red-100 text-red-800'
+                                : 'text-gray-600'
+                            }`}
+                          >
+                            {currentPaper.rating
+                              ? currentPaper.rating === 'interesting'
+                                ? 'Interesting'
+                                : 'Not Interesting'
+                              : 'Not Reviewed'}
+                          </Badge>
+                          <Badge
+                            className={`text-xs ${
+                              currentPaper.tags.computerVision
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {currentPaper.tags.computerVision ? '✓ Computer Vision' : '✗ Computer Vision'}
+                          </Badge>
+                          <Badge
+                            className={`text-xs ${
+                              currentPaper.tags.industryProblem
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {currentPaper.tags.industryProblem ? '✓ Industry Problem' : '✗ Industry Problem'}
+                          </Badge>
+                          <Badge
+                            className={`text-xs ${
+                              currentPaper.tags.productPotential
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {currentPaper.tags.productPotential ? '✓ Product Potential' : '✗ Product Potential'}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Layperson Summary */}
+                      <div>
+                        <h3 className="font-medium text-gray-900 mb-2">Layperson Summary</h3>
+                        <p className="text-gray-800">
+                          {currentPaper.laypersonSummary || 'No summary provided'}
+                        </p>
+                      </div>
+
+                      {/* Solution Sentence */}
+                      <div>
+                        <h3 className="font-medium text-gray-900 mb-2">Solution Sentence</h3>
+                        <p className="text-gray-800">
+                          {currentPaper.solutionSentence || 'No solution sentence provided'}
+                        </p>
+                      </div>
+
+                      {/* Detailed Information */}
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="font-medium text-gray-900 mb-2">Title</h3>
+                          <p className="text-gray-800">{currentPaper.title}</p>
+                        </div>
+
+                        <div>
+                          <h3 className="font-medium text-gray-900 mb-2">Abstract</h3>
+                          <p className="text-gray-700 leading-relaxed">{currentPaper.abstract}</p>
+                        </div>
+
+                        <div>
+                          <h3 className="font-medium text-gray-900 mb-2">Authors</h3>
+                          <p className="text-gray-700">{currentPaper.authors.join(', ')}</p>
+                        </div>
+
+                        <div>
+                          <h3 className="font-medium text-gray-900 mb-2">Keywords</h3>
+                          <div className="flex flex-wrap gap-1">
+                            {currentPaper.keywords.map((keyword, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {keyword}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Confidence Comment */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Confidence Comment
+                          </label>
+                          <Textarea
+                            value={currentPaper.confidenceComment || ''}
+                            onChange={(e) => updatePaperField('confidenceComment', e.target.value)}
+                            placeholder="Add any confidence notes or comments..."
+                            className="min-h-[60px]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-[calc(100vh-200px)] flex items-center justify-center">
+                  <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600">Loading papers...</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Status Bar */}
+            {statusMessage && (
+              <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white px-4 py-2 text-sm">
+                {statusMessage}
+              </div>
+            )}
+
+            {/* Dialogs */}
+            <StatisticsDialog
+              open={showStats}
+              onOpenChange={setShowStats}
+              papers={papers}
+              filteredPapers={filteredPapers}
+            />
+            <JumpToDialog
+              open={showJumpTo}
+              onOpenChange={setShowJumpTo}
+              maxIndex={filteredPapers.length}
+              onJump={(index) => setCurrentIndex(index - 1)}
+            />
           </div>
-        )}
+        </SidebarInset>
       </div>
-
-      {/* Status Bar */}
-      {statusMessage && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white px-4 py-2 text-sm">
-          {statusMessage}
-        </div>
-      )}
-
-      {/* Dialogs */}
-      <StatisticsDialog
-        open={showStats}
-        onOpenChange={setShowStats}
-        papers={papers}
-        filteredPapers={filteredPapers}
-      />
-      <JumpToDialog
-        open={showJumpTo}
-        onOpenChange={setShowJumpTo}
-        maxIndex={filteredPapers.length}
-        onJump={(index) => setCurrentIndex(index - 1)}
-      />
-    </div>
+    </SidebarProvider>
   );
 };
 
