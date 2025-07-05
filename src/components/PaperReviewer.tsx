@@ -128,7 +128,7 @@ const PaperReviewer = () => {
     }
 
     if (showOnlyIndustry) {
-      filtered = filtered.filter(paper => paper.isIndustry);
+      filtered = filtered.filter(paper => paper.tags.industryProblem);
     }
 
     if (showOnlyComputerVision) {
