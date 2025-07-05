@@ -68,3 +68,42 @@ export const createPaperChunks = (papers: any[]) => {
   }
   return chunks;
 };
+
+export const processCSVToPapers = (csvText: string) => {
+  console.log('Processing CSV text...');
+  
+  // Split CSV into lines and filter out empty lines
+  const lines = csvText.split('\n').filter(line => line.trim().length > 0);
+  
+  if (lines.length < 2) {
+    throw new Error('CSV file must contain at least a header row and one data row');
+  }
+  
+  // Parse header row
+  const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
+  console.log('CSV headers:', headers);
+  
+  // Parse data rows
+  const papers = [];
+  for (let i = 1; i < lines.length; i++) {
+    try {
+      // Simple CSV parsing - split by comma and remove quotes
+      const values = lines[i].split(',').map(value => value.trim().replace(/"/g, ''));
+      
+      // Create row object
+      const row: any = {};
+      headers.forEach((header, index) => {
+        row[header] = values[index] || '';
+      });
+      
+      // Transform to paper format
+      const paper = transformCSVRowToPaper(row as CSVRow, i);
+      papers.push(paper);
+    } catch (error) {
+      console.warn(`Error processing row ${i}:`, error);
+    }
+  }
+  
+  console.log(`Successfully processed ${papers.length} papers from CSV`);
+  return papers;
+};
