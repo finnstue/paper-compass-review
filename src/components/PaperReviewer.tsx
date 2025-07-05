@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2, RotateCcw } from 'lucide-react';
+import { Loader2, RotateCcw, Upload, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,7 @@ import { StatisticsDialog } from './StatisticsDialog';
 import { JumpToDialog } from './JumpToDialog';
 import { AppSidebar } from './AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { paperDataService } from '../services/paperDataService';
+import { processCSVToPapers } from '../utils/csvProcessor';
 
 export interface Paper {
   id: number;
@@ -47,65 +48,65 @@ const PaperReviewer = () => {
   const [statusMessage, setStatusMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [totalPapers, setTotalPapers] = useState(0);
+  const [csvUploaded, setCsvUploaded] = useState(false);
 
-  // Initialize data on component mount
-  useEffect(() => {
-    const initializeData = async () => {
-      setIsLoading(true);
-      setStatusMessage('Loading papers...');
-      console.log('Initializing data...');
+  // Handle CSV file upload
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a CSV file.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setStatusMessage('Processing CSV file...');
+
+    try {
+      const text = await file.text();
+      console.log('CSV file loaded, processing...');
       
-      try {
-        const initialPapers = await paperDataService.loadChunk(0);
-        console.log('Initial papers loaded:', initialPapers.length);
-        
-        if (initialPapers.length === 0) {
-          console.error('No papers loaded from chunk 0');
-          setStatusMessage('No papers found');
-          return;
-        }
-        
-        setPapers(initialPapers);
-        
-        // Get the actual total from the service
-        const status = paperDataService.getLoadingStatus();
-        setTotalPapers(status.totalPapers > 0 ? status.totalPapers : initialPapers.length);
-        
-        setStatusMessage(`Loaded ${initialPapers.length} papers`);
-        setTimeout(() => setStatusMessage(''), 2000);
-      } catch (error) {
-        console.error('Error initializing data:', error);
-        setStatusMessage('Error loading papers');
-        setTimeout(() => setStatusMessage(''), 3000);
-      } finally {
-        setIsLoading(false);
+      const processedPapers = processCSVToPapers(text);
+      console.log(`Processed ${processedPapers.length} papers from CSV`);
+      
+      if (processedPapers.length === 0) {
+        throw new Error('No valid papers found in CSV file');
       }
-    };
-    
-    initializeData();
-  }, []);
 
-  // Load more data when approaching end of current chunk
-  useEffect(() => {
-    const loadMoreIfNeeded = async () => {
-      if (currentIndex > papers.length - 100 && !isLoading) {
-        setIsLoading(true);
-        try {
-          const updatedPapers = await paperDataService.loadMoreChunks(currentIndex);
-          setPapers(updatedPapers);
-        } catch (error) {
-          console.error('Error loading more papers:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadMoreIfNeeded();
-  }, [currentIndex, papers.length, isLoading]);
+      setPapers(processedPapers);
+      setTotalPapers(processedPapers.length);
+      setCsvUploaded(true);
+      setStatusMessage(`Successfully loaded ${processedPapers.length} papers`);
+      
+      toast({
+        title: "CSV Uploaded Successfully",
+        description: `Loaded ${processedPapers.length} papers for review.`
+      });
+      
+      setTimeout(() => setStatusMessage(''), 3000);
+    } catch (error) {
+      console.error('Error processing CSV:', error);
+      setStatusMessage('Error processing CSV file');
+      toast({
+        title: "Upload Error",
+        description: error instanceof Error ? error.message : "Failed to process CSV file. Please check the format.",
+        variant: "destructive"
+      });
+      setTimeout(() => setStatusMessage(''), 5000);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Apply filters with improved performance
   const applyFilters = useCallback(() => {
+    if (!csvUploaded) return;
+    
     console.log('Applying filters to', papers.length, 'papers');
     let filtered = [...papers];
 
@@ -153,7 +154,7 @@ const PaperReviewer = () => {
     if (filtered.length > 0 && currentIndex >= filtered.length) {
       setCurrentIndex(0);
     }
-  }, [papers, searchTerm, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, showOnlyProduct, randomOrder, currentIndex]);
+  }, [papers, searchTerm, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, showOnlyProduct, randomOrder, currentIndex, csvUploaded]);
 
   useEffect(() => {
     applyFilters();
@@ -176,6 +177,7 @@ const PaperReviewer = () => {
       setCurrentIndex(currentIndex + 1);
     }
   };
+
   const updatePaperField = (field: keyof Paper, value: string) => {
     if (!currentPaper) return;
     const updatedPapers = papers.map(paper => paper.id === currentPaper.id ? {
@@ -184,7 +186,10 @@ const PaperReviewer = () => {
     } : paper);
     setPapers(updatedPapers);
   };
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!csvUploaded) return;
+    
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
       if (e.key === 'f' && e.ctrlKey) {
         e.preventDefault();
@@ -247,11 +252,13 @@ const PaperReviewer = () => {
         setRandomOrder(!randomOrder);
         break;
     }
-  }, [currentIndex, filteredPapers.length, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, showOnlyProduct, randomOrder]);
+  }, [currentIndex, filteredPapers.length, showOnlyUnrated, showOnlyIndustry, showOnlyComputerVision, showOnlyProduct, randomOrder, csvUploaded]);
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
+
   const clearFilters = () => {
     setSearchTerm('');
     setShowOnlyUnrated(false);
@@ -263,6 +270,7 @@ const PaperReviewer = () => {
     setStatusMessage('Filters cleared');
     setTimeout(() => setStatusMessage(''), 2000);
   };
+
   const saveProgress = () => {
     setStatusMessage('Progress saved successfully');
     setTimeout(() => setStatusMessage(''), 2000);
@@ -276,35 +284,57 @@ const PaperReviewer = () => {
   const currentPaper = filteredPapers[currentIndex];
   const progress = filteredPapers.length > 0 ? (currentIndex + 1) / filteredPapers.length * 100 : 0;
 
-  console.log('Current render state:', {
-    papersLength: papers.length,
-    filteredPapersLength: filteredPapers.length,
-    currentIndex,
-    currentPaper: currentPaper ? { title: currentPaper.title, rating: currentPaper.rating } : 'none',
-    isLoading
-  });
-
-  if (isLoading && papers.length === 0) {
+  // Show upload screen if no CSV has been uploaded
+  if (!csvUploaded && !isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-600">Loading papers...</p>
+        <div className="max-w-md w-full mx-auto p-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FileText className="w-8 h-8 text-blue-600" />
+            </div>
+            
+            <h1 className="text-2xl font-semibold text-gray-900 mb-3">
+              Academic Paper Reviewer
+            </h1>
+            
+            <p className="text-gray-600 mb-8 leading-relaxed">
+              Upload your CSV file containing academic papers to start reviewing. 
+              The file should include columns for title, abstract, authors, keywords, and other paper details.
+            </p>
+            
+            <div className="space-y-4">
+              <label 
+                htmlFor="csv-upload" 
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 cursor-pointer transition-colors w-full"
+              >
+                <Upload className="w-5 h-5 mr-2" />
+                Upload CSV File
+              </label>
+              <input
+                id="csv-upload"
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              
+              <p className="text-sm text-gray-500">
+                Supported format: CSV files (.csv)
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!currentPaper && !isLoading && papers.length === 0) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">No Papers Found</h2>
-          <p className="text-gray-600 mb-4">Unable to load paper data. Check the console for errors.</p>
-          <Button onClick={() => window.location.reload()} variant="outline">
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Reload Page
-          </Button>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-400" />
+          <p className="text-gray-600">{statusMessage || 'Processing...'}</p>
         </div>
       </div>
     );
