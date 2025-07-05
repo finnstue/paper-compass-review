@@ -161,10 +161,14 @@ const PaperReviewer = () => {
 
   const ratePaper = (rating: 'interesting' | 'not-interesting') => {
     if (!currentPaper) return;
+    
+    console.log(`Rating paper ${currentPaper.id} as ${rating}`);
+    
     const updatedPapers = papers.map(paper => paper.id === currentPaper.id ? {
       ...paper,
       rating
     } : paper);
+    
     setPapers(updatedPapers);
 
     // Move to next paper
@@ -268,6 +272,7 @@ const PaperReviewer = () => {
     });
   };
 
+  // Get current paper from the updated filtered papers
   const currentPaper = filteredPapers[currentIndex];
   const progress = filteredPapers.length > 0 ? (currentIndex + 1) / filteredPapers.length * 100 : 0;
 
@@ -275,7 +280,7 @@ const PaperReviewer = () => {
     papersLength: papers.length,
     filteredPapersLength: filteredPapers.length,
     currentIndex,
-    currentPaper: currentPaper ? currentPaper.title : 'none',
+    currentPaper: currentPaper ? { title: currentPaper.title, rating: currentPaper.rating } : 'none',
     isLoading
   });
 
@@ -363,6 +368,12 @@ const PaperReviewer = () => {
                   <span className="text-sm text-gray-600">{Math.round(progress)}% complete</span>
                 </div>
                 <Progress value={progress} className="h-2" />
+              </div>
+              
+              {/* Rating Instructions */}
+              <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                Press <kbd className="px-1 py-0.5 bg-white border rounded text-xs">M</kbd> for interesting, 
+                <kbd className="px-1 py-0.5 bg-white border rounded text-xs mx-1">X</kbd> for not interesting
               </div>
             </div>
 
