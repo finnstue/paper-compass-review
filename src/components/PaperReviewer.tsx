@@ -452,10 +452,10 @@ const PaperReviewer = () => {
                       <div>
                         <h3 className="font-medium text-gray-900 mb-2">
                           {currentPaper.rating === 'interesting' 
-                            ? '👍 Interesting' 
+                            ? 'Interesting 👍' 
                             : currentPaper.rating === 'not-interesting'
-                            ? '👎 Not Interesting'
-                            : '❓ Unrated'
+                            ? 'Not Interesting 👎'
+                            : 'Unrated ⚫'
                           }
                         </h3>
                         <div className="flex flex-wrap gap-2">
