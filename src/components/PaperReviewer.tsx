@@ -448,28 +448,19 @@ const PaperReviewer = () => {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                   <ScrollArea className="h-[calc(100vh-200px)]">
                     <div className="p-6 space-y-6">
-                      {/* Labels and Quick Information */}
+                      {/* Interesting Status and Quick Information */}
                       <div>
-                        <h3 className="font-medium text-gray-900 mb-2">Labels</h3>
+                        <h3 className="font-medium text-gray-900 mb-2">
+                          {currentPaper.rating === 'interesting' 
+                            ? '👍 Interesting' 
+                            : currentPaper.rating === 'not-interesting'
+                            ? '👎 Not Interesting'
+                            : '❓ Unrated'
+                          }
+                        </h3>
                         <div className="flex flex-wrap gap-2">
                           <Badge variant="outline" className="text-xs">
                             {currentPaper.year}
-                          </Badge>
-                          <Badge
-                            variant={currentPaper.rating ? "default" : "outline"}
-                            className={`text-xs ${
-                              currentPaper.rating === 'interesting'
-                                ? 'bg-green-100 text-green-800'
-                                : currentPaper.rating === 'not-interesting'
-                                ? 'bg-red-100 text-red-800'
-                                : 'text-gray-600'
-                            }`}
-                          >
-                            {currentPaper.rating
-                              ? currentPaper.rating === 'interesting'
-                                ? 'Interesting'
-                                : 'Not Interesting'
-                              : 'Not Reviewed'}
                           </Badge>
                           <Badge
                             className={`text-xs ${
