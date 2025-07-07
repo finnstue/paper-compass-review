@@ -9,7 +9,7 @@ export interface CSVRow {
   Label_Uses_Computer_Vision: string;
   Label_Solves_Industry_Problem: string;
   Label_Can_Be_Product: string;
-  Solution_Sentence: string;
+  product_idea: string;
   Layperson_Summary: string;
   Confidence_Comment: string;
 }
@@ -84,7 +84,7 @@ export const transformCSVRowToPaper = (row: CSVRow, id: number) => {
     year: parseInt(row.Year) || new Date().getFullYear(),
     isIndustry: toBool(row.industry),
     rating: convertRating(row.interesting),
-    solutionSentence: row.Solution_Sentence || '',
+    solutionSentence: row.product_idea || '',
     laypersonSummary: row.Layperson_Summary || '',
     confidenceComment: row.Confidence_Comment || '',
     tags: {
@@ -131,7 +131,7 @@ export const processCSVToPapers = (csvText: string) => {
     'Label_Uses_Computer_Vision': 'Label_Uses_Computer_Vision',
     'Label_Solves_Industry_Problem': 'Label_Solves_Industry_Problem',
     'Label_Can_Be_Product': 'Label_Can_Be_Product',
-    'Solution_Sentence': 'Solution_Sentence',
+    'product_idea': 'product_idea',
     'Layperson_Summary': 'Layperson_Summary',
     'Confidence_Comment': 'Confidence_Comment'
   };
